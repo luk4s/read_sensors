@@ -29,7 +29,7 @@ jobs:
 
       - name: Extract version
         id: get_version
-        run: echo "::set-output name=version::$(cat version)"
+        run: echo "version=$(cat version)" >> $GITHUB_OUTPUT
 
       - name: Build Docker image
         run: docker build -t ghcr.io/${{ github.repository }}/read_sensors:${{ steps.get_version.outputs.version }} .
@@ -76,6 +76,15 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Download Docker image artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: docker-image
+          path: .
+
+      - name: Load Docker image
+        run: docker load -i image.tar
+
       - name: Push Docker image
         run: docker push ghcr.io/${{ github.repository }}/read_sensors:${{ needs.build.outputs.version }}
 
@@ -83,5 +92,4 @@ jobs:
         if: github.ref == 'refs/heads/main'
         run: |
           docker tag ghcr.io/${{ github.repository }}/read_sensors:${{ needs.build.outputs.version }} ghcr.io/${{ github.repository }}/read_sensors:latest
-          docker push ghcr.io/${{ github.repository }}/read_sensors:${{ needs.build.outputs.version }}
           docker push ghcr.io/${{ github.repository }}/read_sensors:latest
