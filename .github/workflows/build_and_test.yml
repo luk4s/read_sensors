@@ -77,7 +77,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Push Docker image
-        run: docker push ghcr.io/${{ github.repository }}/read_sensors:${{ .build.outputs.version }}
+        run: docker push ghcr.io/${{ github.repository }}/read_sensors:${{ needs.build.outputs.version }}
 
       - name: Tag Docker image as latest
         if: github.ref == 'refs/heads/main'
