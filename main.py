@@ -30,9 +30,9 @@ def submit_data(data):
                              database=os.getenv("INFLUXDB_BUCKET"))
     point = Point("somfy")
     for key, value in data.items():
-        point.field(key, value)
+        point.field(key, float(value))
 
-    client.write(point)
+    client.write(point, precision="m")
 
 
 if __name__ == "__main__":
