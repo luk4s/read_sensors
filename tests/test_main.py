@@ -7,9 +7,17 @@ import main
 @pytest.fixture
 def mock_sensors(monkeypatch):
     sensors_mock = Mock()
+    sensors_mock.KNOWN_SENSORS = {
+        "outdoor": "io:9229676",
+        "outdoor2": "io:5041775",
+        "sunlight": "io:8548271",
+        "thermostat": "somfythermostat:193910495402#1",
+        "humidity": "somfythermostat:193910495402#3"
+    }
     sensors_mock.data.return_value = {
         "thermostat": "thermostat-uid",
         "outdoor": "outdoor-uid",
+        "outdoor2": "outdoor2-uid",
         "sunlight": "sunlight-uid",
         "humidity": "humidity-uid"
     }
@@ -24,6 +32,7 @@ def mock_homebridge_client(monkeypatch):
     homebridge_client_mock_instance.sensor_values.side_effect = lambda uid: {
         "thermostat-uid": {"CurrentTemperature": 22},
         "outdoor-uid": {"CurrentTemperature": 18},
+        "outdoor2-uid": {"CurrentTemperature": 19},
         "sunlight-uid": {"CurrentAmbientLightLevel": 300},
         "humidity-uid": {"CurrentRelativeHumidity": 45}
     }.get(uid, {})
@@ -36,6 +45,7 @@ def test_read_data(mock_sensors, mock_homebridge_client):
     assert data == {
         "indoor": 22,
         "outdoor": 18,
+        "outdoor2": 19,
         "lux": 300,
         "humidity": 45
     }
@@ -52,6 +62,7 @@ def test_submit_data(mock_influxdb_client):
     sample_data = {
         "indoor": 22,
         "outdoor": 18,
+        "outdoor2": 19,
         "lux": 300,
         "humidity": 45
     }
@@ -60,6 +71,7 @@ def test_submit_data(mock_influxdb_client):
     mock_influxdb_client_instance.write.assert_called_once()
     point_arg = mock_influxdb_client_instance.write.call_args[0][0]
     assert isinstance(point_arg, Point)
-    assert point_arg.to_line_protocol().startswith('somfy')
+    assert point_arg.to_line_protocol().startswith("somfy")
     for key, value in sample_data.items():
         assert f'{key}={value}' in point_arg.to_line_protocol()
+

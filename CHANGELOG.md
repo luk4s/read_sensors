@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.1.0] - 2024-08-30
+### Added
+- new temperature sensor
+### Changed
+- gather sensors uuid based on their known serial number
+
 ## [1.0.0] - 2024-08-20
 ### Added
 - Initial release of the project.

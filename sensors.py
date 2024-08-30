@@ -4,10 +4,18 @@ from homebridge import HomebridgeClient
 
 
 SENSOR_FILE = "/tmp/sensors.json"
+# @todo: Maybe this should be configurable
+KNOWN_SENSORS = {
+        "outdoor": "io:9229676",
+        "outdoor2": "io:5041775",
+        "sunlight": "io:8548271",
+        "thermostat": "somfythermostat:193910495402#1",
+        "humidity": "somfythermostat:193910495402#3"
+    }
 
 
-def data():
-    if os.path.exists(SENSOR_FILE):
+def data(force=False):
+    if not force and os.path.exists(SENSOR_FILE):
         with open(SENSOR_FILE, "r") as sensor_file:
             return json.load(sensor_file)
 
@@ -18,20 +26,18 @@ def data():
 
     # Print accessory information
     for index, item in enumerate(accessory_list):
-        print(f"{index:02d}".ljust(4), f"{item['serviceName']}".rjust(25), "=>", item['uniqueId'])
+        print(f"{index:02d}".ljust(4), f"{item['serviceName']} ({item["accessoryInformation"]["Serial Number"]})".rjust(45), "=>", item['uniqueId'])
 
     print("-" * 36)
 
-    # Filter and organize sensor data
-    sensor_types = ["Thermostat", "LightSensor", "TemperatureSensor", "HumiditySensor"]
-    sensors_list = {item['type']: item for item in accessory_list if item['type'] in sensor_types}
+    known_sensors = {v: k for k, v in KNOWN_SENSORS.items()}
 
-    sensors_ids_map = {
-        "outdoor": sensors_list.get("TemperatureSensor", {}).get("uniqueId"),
-        "sunlight": sensors_list.get("LightSensor", {}).get("uniqueId"),
-        "thermostat": sensors_list.get("Thermostat", {}).get("uniqueId"),
-        "humidity": sensors_list.get("HumiditySensor", {}).get("uniqueId")
-    }
+    sensors_ids_map = {}
+    for accessory in accessory_list:
+        serial_number = accessory["accessoryInformation"]["Serial Number"]
+        if serial_number in known_sensors.keys():
+            sensors_ids_map[known_sensors[serial_number]] = accessory["uniqueId"]
+
     # Write sensor IDs to file
     with open(SENSOR_FILE, "w") as sensor_file:
         json.dump(sensors_ids_map, sensor_file)
