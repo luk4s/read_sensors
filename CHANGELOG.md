@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.2.0] - 2026-07-24
+### Changed
+- Updated dependencies to latest versions: `requests==2.34.2`, `influxdb3-python==0.20.0`, `pytest==9.1.1`
+
 ## [1.1.0] - 2024-08-30
 ### Added
 - new temperature sensor
